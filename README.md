@@ -559,6 +559,13 @@
               <span id="cloudSyncSpinner" class="w-4 h-4 border-2 border-uthmPurple border-t-transparent rounded-full animate-spin"></span>
               <span id="cloudSyncText">Menghantar dan merekodkan jawapan anda...</span>
             </div>
+
+            <!-- Butang Hantar Semula (Jika diperlukan) -->
+            <div class="mt-3">
+              <button id="retrySyncBtn" onclick="retrySubmitToGoogleSheet()" class="hidden inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-uthmPurple hover:bg-uthmPurpleLight shadow-sm transition">
+                <span>↻ Hantar Semula ke Google Sheet</span>
+              </button>
+            </div>
           </div>
 
           <!-- Ringkasan Profil Responden -->
@@ -1393,6 +1400,7 @@
       let responses = {};
       let autoAdvanceTimer = null;
       let submissionId = null;
+      let lastSubmissionPayload = null;
 
       window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('totalQNum').textContent = QUESTIONS.length;
@@ -1647,10 +1655,13 @@
       }
 
       async function sendResponsesToGoogleSheet(payload) {
+        lastSubmissionPayload = payload;
         const statusEl = document.getElementById('cloudSyncStatus');
         const spinnerEl = document.getElementById('cloudSyncSpinner');
         const textEl = document.getElementById('cloudSyncText');
+        const retryBtn = document.getElementById('retrySyncBtn');
 
+        if (retryBtn) retryBtn.classList.add('hidden');
         if (statusEl) {
           statusEl.className = 'mt-5 inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-slate-100 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-700';
         }
@@ -1660,21 +1671,46 @@
         const maxAttempts = 3;
         let delayMs = 1000;
         let success = false;
+        let serverMessage = '';
 
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
-            await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+            // Cuba penghantaran dengan pengesahan respons JSON daripada Google Apps Script
+            const res = await fetch(GOOGLE_SHEET_WEBAPP_URL, {
               method: 'POST',
-              mode: 'no-cors',
+              redirect: 'follow',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(payload),
             });
+
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.status === 'success') {
+                success = true;
+                serverMessage = `Rekod #${data.rowNumber || ''} (${data.respondentId || payload.submissionId})`;
+                break;
+              } else if (data && data.status === 'error') {
+                throw new Error(data.message || 'Ralat pelayan Google Sheet');
+              }
+            }
             success = true;
             break;
           } catch (err) {
-            if (attempt < maxAttempts) {
-              await new Promise((resolve) => setTimeout(resolve, delayMs));
-              delayMs *= 2;
+            // Sandaran no-cors jika pelayar menyekat bacaan redirect Google Apps Script
+            try {
+              await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload),
+              });
+              success = true;
+              break;
+            } catch (fallbackErr) {
+              if (attempt < maxAttempts) {
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+                delayMs *= 2;
+              }
             }
           }
         }
@@ -1686,17 +1722,27 @@
             statusEl.className = 'mt-5 inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-xs sm:text-sm font-bold text-emerald-800';
           }
           if (textEl) {
-            textEl.textContent = '✅ Terima kasih! Semua jawapan anda telah berjaya direkodkan secara automatik.';
+            textEl.textContent = serverMessage
+              ? `✅ Berjaya! Jawapan direkodkan ke Google Sheet (${serverMessage}).`
+              : '✅ Terima kasih! Semua jawapan anda telah berjaya direkodkan secara automatik.';
           }
+          if (retryBtn) retryBtn.classList.remove('hidden');
         } else {
           if (statusEl) {
             statusEl.className = 'mt-5 inline-flex items-center gap-2.5 px-5 py-2.5 rounded-2xl bg-amber-50 border border-amber-300 text-xs sm:text-sm font-semibold text-amber-800';
           }
           if (textEl) {
-            textEl.textContent = '⚠️ Gangguan rangkaian dikesan. Sila pastikan internet aktif dan tekan Semak Semula untuk menghantar.';
+            textEl.textContent = '⚠️ Gangguan rangkaian dikesan. Sila tekan butang di bawah untuk menghantar semula.';
           }
+          if (retryBtn) retryBtn.classList.remove('hidden');
         }
       }
+
+      window.retrySubmitToGoogleSheet = function () {
+        if (lastSubmissionPayload) {
+          sendResponsesToGoogleSheet(lastSubmissionPayload);
+        }
+      };
 
       function showCompletionScreen() {
         document.getElementById('landingView').classList.add('hidden');
