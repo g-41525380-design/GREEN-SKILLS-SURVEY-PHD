@@ -423,7 +423,7 @@
           <!-- 4. PANDUAN SKALA LIKERT BERKOD WARNA -->
           <div class="pt-1">
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-              Panduan Skala Likert Berkod Warna / Color-Coded Likert Scale Guide
+              Jadual 1: Panduan Skala Likert Berkod Warna / Table 1: Color-Coded Likert Scale Guide
             </h3>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
               <div class="p-3 rounded-2xl bg-red-50 border border-red-200 text-center">
@@ -434,12 +434,12 @@
               <div class="p-3 rounded-2xl bg-orange-50 border border-orange-200 text-center">
                 <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-600 text-white font-extrabold text-sm mb-1">2</span>
                 <p class="text-xs font-bold text-orange-900">Tidak Penting</p>
-                <p class="text-[10px] text-orange-700">Slightly important (Tp)</p>
+                <p class="text-[10px] text-orange-700">Not important (Tp)</p>
               </div>
               <div class="p-3 rounded-2xl bg-yellow-50 border border-yellow-200 text-center">
                 <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-500 text-uthmPurple font-extrabold text-sm mb-1">3</span>
-                <p class="text-xs font-bold text-yellow-900">Hampir Penting</p>
-                <p class="text-[10px] text-yellow-800">Somewhat important (Hp)</p>
+                <p class="text-xs font-bold text-yellow-900">Agak Penting</p>
+                <p class="text-[10px] text-yellow-800">Moderately important (Ap)</p>
               </div>
               <div class="p-3 rounded-2xl bg-lime-50 border border-lime-200 text-center">
                 <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-lime-600 text-white font-extrabold text-sm mb-1">4</span>
@@ -449,7 +449,7 @@
               <div class="col-span-2 sm:col-span-1 p-3 rounded-2xl bg-green-50 border border-green-200 text-center">
                 <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-green-700 text-white font-extrabold text-sm mb-1">5</span>
                 <p class="text-xs font-bold text-green-900">Sangat Penting</p>
-                <p class="text-[10px] text-green-700">Strongly important (Sp)</p>
+                <p class="text-[10px] text-green-700">Very important (Sp)</p>
               </div>
             </div>
           </div>
@@ -770,13 +770,13 @@
       // URL Google Apps Script Web App
       const GOOGLE_SHEET_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbweOY7QBE0FrxsgQ-tVWkAHGQZM732D5t_28itmuRWCbeDobVIAyihPot-jdIaFYf8rYg/exec';
 
-      // Skala Likert 1-5 Berkod Warna
+      // Skala Likert 1-5 Berkod Warna (Jadual 1 Terkini)
       const LIKERT_SCALE = [
         { value: 1, abbr: 'Stp', labelMs: 'Sangat Tidak Penting', labelEn: 'Not at all important', colorClass: 'scale-1', dotColor: 'bg-red-600' },
-        { value: 2, abbr: 'Tp', labelMs: 'Tidak Penting', labelEn: 'Slightly important', colorClass: 'scale-2', dotColor: 'bg-orange-600' },
-        { value: 3, abbr: 'Hp', labelMs: 'Hampir Penting', labelEn: 'Somewhat important', colorClass: 'scale-3', dotColor: 'bg-yellow-500' },
+        { value: 2, abbr: 'Tp', labelMs: 'Tidak Penting', labelEn: 'Not important', colorClass: 'scale-2', dotColor: 'bg-orange-600' },
+        { value: 3, abbr: 'Ap', labelMs: 'Agak Penting', labelEn: 'Moderately important', colorClass: 'scale-3', dotColor: 'bg-yellow-500' },
         { value: 4, abbr: 'P', labelMs: 'Penting', labelEn: 'Important', colorClass: 'scale-4', dotColor: 'bg-lime-600' },
-        { value: 5, abbr: 'Sp', labelMs: 'Sangat Penting', labelEn: 'Strongly important', colorClass: 'scale-5', dotColor: 'bg-green-700' },
+        { value: 5, abbr: 'Sp', labelMs: 'Sangat Penting', labelEn: 'Very important', colorClass: 'scale-5', dotColor: 'bg-green-700' },
       ];
 
       // Senarai Penuh 77 Item Soal Selidik
