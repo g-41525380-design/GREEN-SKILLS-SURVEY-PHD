@@ -305,17 +305,17 @@
                     <input type="url" id="google-script-url-input" placeholder="https://script.google.com/macros/s/AKfycbx.../exec"
                         class="w-full px-3.5 py-3 rounded-xl border-2 border-slate-200 focus:border-[#1a237e] focus:ring-4 focus:ring-indigo-100 outline-none text-xs sm:text-sm font-mono text-slate-800" />
                     <p class="text-[11px] text-slate-500 mt-1.5">
-                        💡 <strong>Nota Domain MOE-DL:</strong> Memandangkan skrip ini dihoskan di bawah domain <code>moe-dl.edu.my</code>, sila pastikan tetapan <em>Who has access</em> semasa Deploy Web App dipilih sebagai <strong>Anyone (Sesiapa sahaja)</strong> supaya pensyarah/responden yang menggunakan e-mel peribadi atau tanpa log masuk MOE tetap dapat menghantar jawapan tanpa sekatan kebenaran.
+                        ✅ <strong>Sambungan Awam Aktif:</strong> URL ini menggunakan endpoint awam <code>script.google.com/macros/s/.../exec</code> tanpa sekatan domain, membolehkan semua pensyarah Kolej Vokasional menghantar jawapan terus ke Google Sheet.
                     </p>
                 </div>
 
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
                     <button type="button" onclick="testGoogleSheetConnection()" id="btn-test-sheet" class="px-4 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-[#1a237e] border border-indigo-200 text-xs font-bold transition flex items-center gap-1.5">
-                        <span>🔌</span> Uji Sambungan (Hantar Isyarat Ujian)
+                        <span>🔌</span> Uji Sambungan (Hantar Rekod Ujian)
                     </button>
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="clearGoogleSheetUrl()" class="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition">
-                            Padam URL
+                        <button type="button" onclick="clearGoogleSheetUrl()" class="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+                            Tetapkan Semula ke URL Lalai
                         </button>
                         <button type="button" onclick="saveGoogleSheetUrl()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition">
                             Simpan Tetapan URL
@@ -383,9 +383,9 @@
 
     <script>
         // =========================================================================
-        // 0. KONFIGURASI GOOGLE APPS SCRIPT (DISAMBUNGKAN SECARA KEKAL)
+        // 0. KONFIGURASI GOOGLE APPS SCRIPT (SAMBUNGAN AWAM KEKAL)
         // =========================================================================
-        const DEFAULT_GOOGLE_SCRIPT_URL = "https://script.google.com/a/macros/moe-dl.edu.my/s/AKfycbyWuV7Ji6uGdOC9Jla6pXe5VjiQ7OmkRlCdyej9Xf1A2sak7UBf0fW_gi54EtKXf2PDGw/exec";
+        const DEFAULT_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWuV7Ji6uGdOC9Jla6pXe5VjiQ7OmkRlCdyej9Xf1A2sak7UBf0fW_gi54EtKXf2PDGw/exec";
         const SHEET_URL_STORAGE_KEY = 'uthm_phd_google_script_url_v1';
 
         const APPS_SCRIPT_TEMPLATE_CODE = `const SHEET_NAME = "Data_Soal_Selidik";
@@ -434,6 +434,11 @@ function doPost(e) {
 
         function getActiveScriptUrl() {
             const savedUrl = localStorage.getItem(SHEET_URL_STORAGE_KEY);
+            // Auto-migrate legacy domain-restricted moe-dl.edu.my cached URL to the new public endpoint
+            if (savedUrl && savedUrl.includes('/a/macros/moe-dl.edu.my/')) {
+                localStorage.setItem(SHEET_URL_STORAGE_KEY, DEFAULT_GOOGLE_SCRIPT_URL);
+                return DEFAULT_GOOGLE_SCRIPT_URL;
+            }
             if (savedUrl && savedUrl.trim() !== '') return savedUrl.trim();
             return (DEFAULT_GOOGLE_SCRIPT_URL || '').trim();
         }
@@ -450,7 +455,7 @@ function doPost(e) {
                 if (headerLabel) headerLabel.textContent = 'Google Sheet Aktif';
                 if (modalText) {
                     modalText.className = 'font-bold text-emerald-700 mt-0.5 break-all';
-                    modalText.textContent = 'Aktif & Disambungkan ke Google Apps Script (moe-dl.edu.my)';
+                    modalText.textContent = 'Google Sheet Aktif — Tersambung terus ke Google Apps Script Awam';
                 }
                 if (modalBadge) {
                     modalBadge.className = 'px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold shrink-0';
@@ -2209,7 +2214,69 @@ function doPost(e) {
                     ${syncBannerHtml}
 
                     <!-- Construct Mean Summary Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-6">
+                        <div class="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-100 text-center">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-700">Bahagian A • Pengetahuan</p>
+                            <p class="font-display font-extrabold text-2xl sm:text-3xl text-[#1a237e] mt-1">${statA.mean}</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Skor Min (${statA.count}/${statA.total} item)</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-100 text-center">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Bahagian B • Kemahiran</p>
+                            <p class="font-display font-extrabold text-2xl sm:text-3xl text-emerald-800 mt-1">${statB.mean}</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Skor Min (${statB.count}/${statB.total} item)</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-100 text-center">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-amber-800">Bahagian C • Sikap & Nilai</p>
+                            <p class="font-display font-extrabold text-2xl sm:text-3xl text-amber-900 mt-1">${statC.mean}</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Skor Min (${statC.count}/${statC.total} item)</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900 text-white text-center shadow-md">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-300">Min Keseluruhan</p>
+                            <p class="font-display font-extrabold text-2xl sm:text-3xl text-white mt-1">${
+                                (() => {
+                                    const allVals = likertItems.map(i => Number(state.answers[i.id])).filter(v => !isNaN(v) && v > 0);
+                                    return allVals.length ? (allVals.reduce((a, b) => a + b, 0) / allVals.length).toFixed(2) : '0.00';
+                                })()
+                            }</p>
+                            <p class="text-[11px] text-slate-300 mt-0.5">Daripada Skala 5.00</p>
+                        </div>
+                    </div>
+
+                    <!-- 5-Color Scale Distribution Breakdown -->
+                    <div class="mt-6 p-5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-3">Taburan Jawapan Mengikut Skala 5-Warna:</h3>
+                        <div class="space-y-2.5">
+                            ${dist.map(d => `
+                                <div class="flex items-center gap-3 text-xs">
+                                    <span class="w-6 h-6 rounded-lg ${d.meta.badgeClass} font-bold flex items-center justify-center shrink-0">${d.score}</span>
+                                    <div class="w-36 sm:w-44 shrink-0 font-semibold text-slate-700 truncate">${d.meta.bm}</div>
+                                    <div class="flex-grow bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                                        <div class="h-full rounded-full transition-all duration-500" style="width: ${d.pct}%; background-color: ${d.meta.hex}"></div>
+                                    </div>
+                                    <span class="w-16 text-right font-bold text-slate-700 shrink-0">${d.count} (${d.pct}%)</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Action Footer on Completion Screen -->
+                    <div class="mt-7 pt-5 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
+                        <div class="text-xs text-slate-500">
+                            ID Rekod: <strong class="font-mono text-slate-800">${state.respondentId || '-'}</strong>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <button type="button" onclick="exportCSV()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-sm flex items-center gap-2 transition">
+                                <span>📥</span> Muat Turun CSV (SPSS / Excel)
+                            </button>
+                            <button type="button" onclick="copySummaryJSON()" class="px-4 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-[#1a237e] border border-indigo-200 text-xs sm:text-sm font-semibold transition">
+                                📋 Salin Rekod
+                            </button>
+                            <button type="button" onclick="requestResetSurvey(); toggleResearcherTools(true);" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold transition">
+                                Responden Baharu
+                            </button>
+                        </div>
+                    </div>
+                </div>
             `;
         }
 
@@ -2347,16 +2414,23 @@ function doPost(e) {
             btn.disabled = true;
             btn.innerHTML = '<span>⏳</span> Menguji sambungan...';
 
+            const testPayload = {
+                ID_Responden: 'TEST_SAMBUNGAN',
+                Tarikh_Masa_Hantar: new Date().toISOString(),
+                A1_Jantina: 'Ujian Sambungan Portal',
+                A6_Kolej_Vokasional: 'UTHM - Pengesahan Web App'
+            };
+
             try {
                 await fetch(url, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ _action: 'TEST_CONNECTION', timestamp: new Date().toISOString() })
+                    body: JSON.stringify(testPayload)
                 });
                 localStorage.setItem(SHEET_URL_STORAGE_KEY, url);
                 updateSheetConnectionIndicator();
-                showToast('✅ Isyarat ujian berjaya dihantar ke Google Apps Script!');
+                showToast('✅ Rekod ujian (TEST_SAMBUNGAN) berjaya dihantar ke Google Sheet!');
             } catch (e) {
                 showToast('⚠️ Gagal menyambung ke URL tersebut. Semak semula pautan Web App.');
             } finally {
